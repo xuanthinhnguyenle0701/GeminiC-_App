@@ -137,7 +137,7 @@ namespace GeminiC__App
 
             // (Phần code chào mừng và lưu vị trí control giữ nguyên)
             lblPerformance.Text = "";
-            rtbOutput.Text = $" Chào mừng đến với đồ án AI-PLC!\n (Đã tải thành công {promptTemplates.Count} templates từ file JSON)\n" +
+            rtbOutput.Text = $" Chào mừng đến với đồ án AI-PLC!\n" +
                              "------------------------------------------------------------------------------------------------\n" +
                              "1. Chọn Hãng, Loại PLC, Ngôn ngữ và Loại khối (FB/FC).\n" +
                              "2. Nhập yêu cầu logic điều khiển bên dưới.\n" +
