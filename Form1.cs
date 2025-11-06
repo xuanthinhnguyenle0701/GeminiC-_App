@@ -7,28 +7,26 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Collections.Generic; // <-- THÊM THƯ VIỆN NÀY
+using System.Collections.Generic;
+using System.Linq;
 
 namespace GeminiC__App
 {
     public partial class Form1 : Form
     {
-        // --- API & PATH (Giữ nguyên) ---
-        private const string ApiKey = "AIzaSyBNQonrLz5eqNjwJsDqz8WCsQRrHxtjxZ0"; // THAY KEY CỦA BẠN VÀO ĐÂY
+        // --- (API Keys và Path giữ nguyên) ---
+        private const string ApiKey = "AIzaSyBNQonrLz5eqNjwJsDqz8WCsQRrHxtjxZ0";
         private const string GeminiApiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + ApiKey;
-        private string scriptPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GeneratedPLC_Code.scl");
+        private string scriptPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GeneratedPLC_Code.scl"); // Sẽ đổi tên file nếu là LAD/FBD
 
-        // --- CÁC CONTROL CŨ (Giữ nguyên) ---
+        // --- (Khai báo control giữ nguyên) ---
         private Size originalFormSize;
         private Rectangle originalbtnGenerate;
         private Rectangle originalrtbOutput;
         private Rectangle originaltxtPrompt;
         private Rectangle originalLblPerformance;
-
         private float originalGenerateFont;
         private float originalLabelFont;
-
-        // --- Khai báo các control (Giữ nguyên) ---
         private ComboBox cbHangPLC;
         private ComboBox cbLoaiPLC;
         private ComboBox cbNgonNgu;
@@ -37,8 +35,6 @@ namespace GeminiC__App
         private Label lblNgonNgu;
         private ComboBox cbLoaiKhoi;
         private Label lblLoaiKhoi;
-
-        // --- Biến lưu vị trí (Giữ nguyên) ---
         private Rectangle originalCbHangPLC;
         private Rectangle originalCbLoaiPLC;
         private Rectangle originalCbNgonNgu;
@@ -48,18 +44,17 @@ namespace GeminiC__App
         private Rectangle originalCbLoaiKhoi;
         private Rectangle originalLblLoaiKhoi;
 
-        // *** THAY ĐỔI: Khai báo Dictionary lưu template ***
+        // --- (Dictionaries giữ nguyên) ---
         private Dictionary<string, string> promptTemplates = new Dictionary<string, string>();
+        private Dictionary<string, List<string>> plcModelData = new Dictionary<string, List<string>>();
 
         public Form1()
         {
             InitializeComponent();
             this.Text = "PLC AI Code Generator (JSON Mode)";
-
-            // *** THÊM MỚI: Gọi hàm đọc file JSON ***
+            InitializePlcData();
             LoadPromptTemplates();
 
-            // --- (Phần code thêm ComboBox và sắp xếp layout giữ nguyên) ---
             #region Khởi tạo Giao diện Động (Dynamic UI)
             int controlWidth = 220;
             int controlHeight = 25;
@@ -70,6 +65,8 @@ namespace GeminiC__App
             rtbOutput.Location = new Point(startX, startY);
             rtbOutput.Size = new Size(this.ClientSize.Width - (startX * 2), 200);
             int topOffset = rtbOutput.Bottom + 10;
+
+            // Hãng PLC
             lblHangPLC = new Label();
             lblHangPLC.Text = "Hãng PLC:";
             lblHangPLC.Location = new Point(startX, topOffset + 4);
@@ -78,10 +75,13 @@ namespace GeminiC__App
             cbHangPLC = new ComboBox();
             cbHangPLC.Location = new Point(startX + labelWidth, topOffset);
             cbHangPLC.Size = new Size(controlWidth, controlHeight);
-            cbHangPLC.Items.AddRange(new string[] { "Siemens", "Schneider", "Allen-Bradley" });
+            cbHangPLC.Items.AddRange(plcModelData.Keys.ToArray());
             cbHangPLC.DropDownStyle = ComboBoxStyle.DropDownList;
             cbHangPLC.SelectedIndex = 0;
+            cbHangPLC.SelectedIndexChanged += CbHangPLC_SelectedIndexChanged; // Gán sự kiện
             this.Controls.Add(cbHangPLC);
+
+            // Loại PLC
             lblLoaiPLC = new Label();
             lblLoaiPLC.Text = "Loại PLC:";
             lblLoaiPLC.Location = new Point(startX, topOffset + controlHeight + padding + 4);
@@ -90,10 +90,10 @@ namespace GeminiC__App
             cbLoaiPLC = new ComboBox();
             cbLoaiPLC.Location = new Point(startX + labelWidth, topOffset + controlHeight + padding);
             cbLoaiPLC.Size = new Size(controlWidth, controlHeight);
-            cbLoaiPLC.Items.AddRange(new string[] { "SIMATIC S7-1500", "SIMATIC S7-1200", "Modicon M340", "ControlLogix" });
             cbLoaiPLC.DropDownStyle = ComboBoxStyle.DropDownList;
-            cbLoaiPLC.SelectedIndex = 0;
             this.Controls.Add(cbLoaiPLC);
+
+            // Ngôn ngữ
             lblNgonNgu = new Label();
             lblNgonNgu.Text = "Ngôn ngữ:";
             lblNgonNgu.Location = new Point(startX, topOffset + (controlHeight + padding) * 2 + 4);
@@ -102,10 +102,14 @@ namespace GeminiC__App
             cbNgonNgu = new ComboBox();
             cbNgonNgu.Location = new Point(startX + labelWidth, topOffset + (controlHeight + padding) * 2);
             cbNgonNgu.Size = new Size(controlWidth, controlHeight);
-            cbNgonNgu.Items.AddRange(new string[] { "SCL (Structured Text)", "ST (Structured Text)", "Ladder (LAD)" });
+            cbNgonNgu.Items.AddRange(new string[] { "SCL (Structured Text)", "Ladder (LAD)", "FBD (Function Block Diagram)" }); // Sửa thứ tự
             cbNgonNgu.DropDownStyle = ComboBoxStyle.DropDownList;
             cbNgonNgu.SelectedIndex = 0;
+            // *** THÊM MỚI: Gán sự kiện cho Ngôn ngữ ***
+            cbNgonNgu.SelectedIndexChanged += CbNgonNgu_SelectedIndexChanged;
             this.Controls.Add(cbNgonNgu);
+
+            // Loại khối
             lblLoaiKhoi = new Label();
             lblLoaiKhoi.Text = "Loại khối:";
             lblLoaiKhoi.Location = new Point(startX, topOffset + (controlHeight + padding) * 3 + 4);
@@ -114,25 +118,30 @@ namespace GeminiC__App
             cbLoaiKhoi = new ComboBox();
             cbLoaiKhoi.Location = new Point(startX + labelWidth, topOffset + (controlHeight + padding) * 3);
             cbLoaiKhoi.Size = new Size(controlWidth, controlHeight);
-            cbLoaiKhoi.Items.AddRange(new string[] { "FUNCTION_BLOCK (FB)", "FUNCTION (FC)" });
+            // *** CẬP NHẬT: Thêm "Không (None)" ***
+            cbLoaiKhoi.Items.AddRange(new string[] { "FUNCTION_BLOCK (FB)", "FUNCTION (FC)", "Không (None)" });
             cbLoaiKhoi.DropDownStyle = ComboBoxStyle.DropDownList;
             cbLoaiKhoi.SelectedIndex = 0;
             this.Controls.Add(cbLoaiKhoi);
+
+            // (Code vị trí txtPrompt, btnGenerate, lblPerformance giữ nguyên)
             txtPrompt.Location = new Point(startX, cbLoaiKhoi.Bottom + 10);
             txtPrompt.Size = new Size(this.ClientSize.Width - btnGenerate.Width - (startX * 3), txtPrompt.Height);
             btnGenerate.Location = new Point(this.ClientSize.Width - btnGenerate.Width - startX, txtPrompt.Top);
             lblPerformance.Location = new Point(startX, txtPrompt.Bottom + 5);
             #endregion
 
-            // *** CẬP NHẬT: Câu chào mừng ***
+            // Gọi sự kiện 1 lần để nạp cbLoaiPLC và cbLoaiKhoi ban đầu
+            CbHangPLC_SelectedIndexChanged(null, null);
+            CbNgonNgu_SelectedIndexChanged(null, null); // <-- THÊM MỚI
+
+            // (Phần code chào mừng và lưu vị trí control giữ nguyên)
             lblPerformance.Text = "";
             rtbOutput.Text = $" Chào mừng đến với đồ án AI-PLC!\n (Đã tải thành công {promptTemplates.Count} templates từ file JSON)\n" +
                              "------------------------------------------------------------------------------------------------\n" +
                              "1. Chọn Hãng, Loại PLC, Ngôn ngữ và Loại khối (FB/FC).\n" +
                              "2. Nhập yêu cầu logic điều khiển bên dưới.\n" +
                              "3. Nhấn 'Generate' để AI tạo code.\n";
-
-            // --- (Lưu vị trí control - Giữ nguyên) ---
             #region Lưu vị trí ban đầu
             originalFormSize = this.Size;
             originalbtnGenerate = new Rectangle(btnGenerate.Location, btnGenerate.Size);
@@ -188,7 +197,57 @@ namespace GeminiC__App
         }
         #endregion
 
-        // *** THÊM MỚI: Hàm đọc file JSON ***
+        // --- (Hàm InitializePlcData giữ nguyên) ---
+        private void InitializePlcData()
+        {
+            plcModelData = new Dictionary<string, List<string>>
+            {
+                { "Siemens", new List<string> { "SIMATIC S7-1500", "SIMATIC S7-1200", "SIMATIC S7-300", "SIMATIC S7-400" }},
+                { "Schneider", new List<string> { "Modicon M340", "Modicon M580", "Modicon M221", "Modicon M251" }},
+                { "Allen-Bradley", new List<string> { "ControlLogix", "CompactLogix", "MicroLogix 800", "MicroLogix 1400" }}
+            };
+        }
+
+        // --- (Sự kiện CbHangPLC_SelectedIndexChanged giữ nguyên) ---
+        private void CbHangPLC_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cbHangPLC.SelectedItem == null) return;
+            string selectedHang = cbHangPLC.SelectedItem.ToString();
+
+            if (plcModelData.TryGetValue(selectedHang, out List<string> models))
+            {
+                cbLoaiPLC.Items.Clear();
+                cbLoaiPLC.Items.AddRange(models.ToArray());
+                cbLoaiPLC.SelectedIndex = 0;
+            }
+        }
+
+        // *** THÊM MỚI: Sự kiện khi người dùng thay đổi Ngôn ngữ ***
+        private void CbNgonNgu_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cbNgonNgu.SelectedItem == null) return;
+            string selectedLang = cbNgonNgu.SelectedItem.ToString();
+
+            if (selectedLang.StartsWith("Ladder") || selectedLang.StartsWith("FBD"))
+            {
+                // Nếu là Ladder hoặc FBD, TẮT ô chọn Loại khối
+                cbLoaiKhoi.Items.Clear();
+                cbLoaiKhoi.Items.Add("Không (None)");
+                cbLoaiKhoi.SelectedIndex = 0;
+                cbLoaiKhoi.Enabled = false;
+            }
+            else // SCL (hoặc ST)
+            {
+                // Nếu là SCL, BẬT lại ô chọn
+                cbLoaiKhoi.Enabled = true;
+                cbLoaiKhoi.Items.Clear();
+                cbLoaiKhoi.Items.AddRange(new string[] { "FUNCTION_BLOCK (FB)", "FUNCTION (FC)" });
+                cbLoaiKhoi.SelectedIndex = 0;
+            }
+        }
+
+
+        // --- (Hàm LoadPromptTemplates giữ nguyên) ---
         private void LoadPromptTemplates()
         {
             string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "PromptTemplates.json");
@@ -196,80 +255,74 @@ namespace GeminiC__App
             {
                 string jsonText = File.ReadAllText(filePath);
                 var collection = JsonConvert.DeserializeObject<TemplateCollection>(jsonText);
-
                 promptTemplates.Clear();
                 foreach (var template in collection.templates)
                 {
-                    // Ghép các dòng mảng "prompt_lines" thành 1 chuỗi string duy nhất
                     string fullPrompt = string.Join(Environment.NewLine, template.prompt_lines);
                     promptTemplates.Add(template.key, fullPrompt);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi nghiêm trọng: Không thể đọc file 'PromptTemplates.json'.\nChương trình sẽ không thể tạo prompt.\n\nChi tiết: {ex.Message}", "Lỗi Tải Template", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Lỗi nghiêm trọng: Không thể đọc file 'PromptTemplates.json'.\nChi tiết: {ex.Message}", "Lỗi Tải Template", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        // *** THAY THẾ: Hàm BuildPlcPrompt (dùng JSON) ***
+        // *** CẬP NHẬT: Hàm BuildPlcPrompt (xử lý 'None') ***
         private string BuildPlcPrompt(string hangPLC, string loaiPLC, string loaiKhoi, string ngonNgu, string yeuCauLogic)
         {
-            // 1. Xác định key (ví dụ: "Siemens_FC" hoặc "Siemens_FB")
-            string khoiKey = loaiKhoi.StartsWith("FUNCTION (FC)") ? "FC" : "FB";
+            // 1. Xác định key
+            string khoiKey;
+            if (loaiKhoi.StartsWith("FUNCTION (FC)"))
+                khoiKey = "FC";
+            else if (loaiKhoi.StartsWith("FUNCTION_BLOCK (FB)"))
+                khoiKey = "FB";
+            else // "Không (None)"
+            {
+                // Tạo key dựa trên ngôn ngữ, ví dụ: Siemens_LAD
+                if (ngonNgu.StartsWith("Ladder"))
+                    khoiKey = "LAD"; // Sẽ tìm "Siemens_LAD"
+                else if (ngonNgu.StartsWith("FBD"))
+                    khoiKey = "FBD"; // Sẽ tìm "Siemens_FBD"
+                else
+                    khoiKey = "FB"; // Fallback: Nếu lỡ chọn SCL + None, cứ dùng FB
+            }
 
-            // Tạm thời gán cứng "Siemens" vì logic JSON của bạn chỉ có Siemens
-            // string key = $"{hangPLC}_{khoiKey}"; 
-            string key = $"Siemens_{khoiKey}"; // Ví dụ: "Siemens_FC"
+            string key = $"{hangPLC}_{khoiKey}";
 
-            // 2. Tra cứu template trong Dictionary
+            // 2. Tra cứu template
             string template;
             if (!promptTemplates.TryGetValue(key, out template))
             {
-                // Nếu không tìm thấy, dùng template mặc định
-                MessageBox.Show($"Không tìm thấy template cho key: '{key}'. Sử dụng template 'Siemens_FB' mặc định.");
-                if (!promptTemplates.TryGetValue("Siemens_FB", out template))
+                // Xử lý lỗi (Fallback)
+                string fallbackKey = $"Siemens_{khoiKey}"; // Thử fallback về Siemens
+                if (khoiKey == "LAD" || khoiKey == "FBD") fallbackKey = "Siemens_LAD"; // Fallback chung cho LAD/FBD
+
+                MessageBox.Show($"Không tìm thấy template cho key: '{key}'.\nSử dụng template mặc định '{fallbackKey}'.");
+
+                if (!promptTemplates.TryGetValue(fallbackKey, out template))
                 {
-                    MessageBox.Show("Lỗi nghiêm trọng: Không tìm thấy template 'Siemens_FB' mặc định.");
-                    return "LỖI: KHÔNG TÌM THẤY TEMPLATE";
+                    // Fallback cuối cùng
+                    if (!promptTemplates.TryGetValue("Siemens_FB", out template))
+                    {
+                        MessageBox.Show($"Lỗi nghiêm trọng: Không tìm thấy template mặc định '{fallbackKey}' hoặc 'Siemens_FB'.");
+                        return "LỖI: KHÔNG TÌM THẤY TEMPLATE";
+                    }
                 }
             }
 
-            // 3. Thay thế các placeholder bằng giá trị thực
+            // 3. Thay thế placeholder
             template = template.Replace("%HANG_PLC%", hangPLC);
             template = template.Replace("%LOAI_PLC%", loaiPLC);
             template = template.Replace("%NGON_NGU%", ngonNgu);
             template = template.Replace("%LOAI_KHOI%", loaiKhoi);
             template = template.Replace("%LOGIC_HERE%", yeuCauLogic);
 
-            // --- Cập nhật dựa trên prompt cũ của bạn (thêm quy tắc) ---
-            if (hangPLC.Equals("Siemens", StringComparison.OrdinalIgnoreCase))
-            {
-                template = template.Replace("%SIEMENS_RULES%",
-                    "2.  *Cấu hình khối (Siemens):* Luôn sử dụng S7_Optimized_Access := 'TRUE'.\n" +
-                    "    * Tuân thủ cách quy định cấu hình của ba mục sau\n" +
-                    "    * Mục TITLE phải đi cùng dấu \"=\". (Ví dụ TITLE = 'Simple Motor Control')\n" +
-                    "    * Mục AUTHOR phải đi cùng dấu \":\" (ví dụ AUTHOR: 'Professional PLC Engineer')\n" +
-                    "    * Mục VERSION phải đi cùng dấu \":\" (ví dụ VERSION: 0.1)");
-            }
-            else
-            {
-                template = template.Replace("%SIEMENS_RULES%", ""); // Xóa nếu không phải Siemens
-            }
-
-            if (loaiKhoi.StartsWith("FUNCTION_BLOCK"))
-            {
-                template = template.Replace("%VAR_RULES%", "    * Tất cả biến nội VAR phải có tiền tố \"stat_\" (cho biến tĩnh) hoặc \"temp_\" (cho biến tạm).");
-            }
-            else
-            {
-                template = template.Replace("%VAR_RULES%", "    * Tất cả biến nội VAR phải có tiền tố \"temp_\" (cho biến tạm).");
-            }
-
             return template;
         }
 
 
-        // *** CẬP NHẬT LỚN: Nút Generate (Sửa lỗi thứ tự tham số) ***
+        // --- (Nút Generate giữ nguyên) ---
         private async void btnGenerate_Click(object sender, EventArgs e)
         {
             lblPerformance.ForeColor = Color.Black;
@@ -293,10 +346,15 @@ namespace GeminiC__App
 
             btnGenerate.Enabled = false;
             lblPerformance.Text = "Đang tạo code PLC.....";
-            // Cập nhật giao diện
-            // *** SỬA LỖI THỨ TỰ THAM SỐ ***
-            // (Thứ tự đúng: hangPLC, loaiPLC, loaiKhoi, ngonNgu, yeuCauLogic)
+
             string promptReady = BuildPlcPrompt(hangPLC, loaiPLC, loaiKhoi, ngonNgu, yeuCauLogic);
+
+            if (promptReady.StartsWith("LỖI:"))
+            {
+                MessageBox.Show(promptReady, "Lỗi Template", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                btnGenerate.Enabled = true;
+                return;
+            }
 
             var startTime = DateTime.Now;
             var scriptContent = await GenerateScriptFromGemini(promptReady);
@@ -348,33 +406,24 @@ namespace GeminiC__App
                             maxOutputTokens = 8192
                         }
                     };
-
                     string jsonBody = JsonConvert.SerializeObject(requestBody);
                     var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
-
                     var response = await client.PostAsync(GeminiApiUrl, content);
-
                     if (!response.IsSuccessStatusCode)
                     {
                         string errorDetails = await response.Content.ReadAsStringAsync();
                         MessageBox.Show($"Error calling Gemini API: {response.StatusCode} ({response.ReasonPhrase})\n\nDetails:\n{errorDetails}");
                         return null;
                     }
-
                     var responseBytes = await response.Content.ReadAsByteArrayAsync();
                     var responseBody = Encoding.UTF8.GetString(responseBytes);
-
                     var jsonResponse = JsonConvert.DeserializeObject<dynamic>(responseBody);
-
                     if (jsonResponse.candidates == null || jsonResponse.candidates.Count == 0)
                     {
-                        // ... (error handling)
                         return null;
                     }
-
                     string rawScript = jsonResponse.candidates[0].content.parts[0].text.ToString();
                     rawScript = rawScript.Replace("\\n", Environment.NewLine).Replace("\\\"", "\"");
-
                     return ExtractCodeFromMarkdown(rawScript);
                 }
             }
@@ -389,6 +438,7 @@ namespace GeminiC__App
         {
             try
             {
+                // Sửa Regex: Cho phép trả về code không có ``` (cho Ladder)
                 var match = Regex.Match(rawResponse, @"```(?:[a-z]+)?\s*([\s\S]*?)\s*```");
                 if (match.Success)
                 {
@@ -398,6 +448,7 @@ namespace GeminiC__App
                         return code;
                     }
                 }
+                // Nếu không có khối ```, trả về nguyên văn (quan trọng cho LAD/FBD)
                 return rawResponse.Trim();
             }
             catch (Exception ex)
@@ -425,23 +476,19 @@ namespace GeminiC__App
         #region Empty Event Handlers
         private void txtPrompt_TextChanged(object sender, EventArgs e)
         {
-
         }
-
         private void Form1_Load(object sender, EventArgs e)
         {
-
         }
         #endregion
     }
 
-    // *** THÊM 2 CLASS HỖ TRỢ JSON VÀO ĐÂY (BÊN NGOÀI CLASS FORM1) ***
+    // --- (Class JSON giữ nguyên) ---
     public class PromptTemplate
     {
         public string key { get; set; }
         public System.Collections.Generic.List<string> prompt_lines { get; set; }
     }
-
     public class TemplateCollection
     {
         public System.Collections.Generic.List<PromptTemplate> templates { get; set; }
