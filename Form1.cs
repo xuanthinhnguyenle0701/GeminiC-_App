@@ -291,9 +291,9 @@ namespace GeminiC__App
             string loaiKhoi = cbLoaiKhoi.SelectedItem.ToString();
             string yeuCauLogic = txtPrompt.Text;
 
-            btnGenerate.Enabled = false;
+            btnGenerate.Enabled = true;
             lblPerformance.Text = "Đang tạo code PLC.....";
-
+            // Cập nhật giao diện
             // *** SỬA LỖI THỨ TỰ THAM SỐ ***
             // (Thứ tự đúng: hangPLC, loaiPLC, loaiKhoi, ngonNgu, yeuCauLogic)
             string promptReady = BuildPlcPrompt(hangPLC, loaiPLC, loaiKhoi, ngonNgu, yeuCauLogic);

@@ -11,7 +11,7 @@
         "{ S7_Optimized_Access := 'TRUE' }",
         "AUTHOR: 'Professional PLC Engineer'",
         "VERSION: 0.1",
-        "   VAR_INPUT",
+        "   VAR_INPUT",       
         "      // [ĐIỀN TẤT CẢ VAR_INPUT VÀO ĐÂY THEO YÊU CẦU]",
         "      // (Ví dụ: i_Start_PB : Bool; // Nút nhấn Start (NO))",
         "   END_VAR",
