@@ -43,7 +43,14 @@ namespace GeminiC__App
         public Form1()
         {
             InitializeComponent();
-            this.Text = "PLC AI Code Generator (JSON Mode)";
+
+            // === THÊM DÒNG NÀY ĐỂ KẾT NỐI SỰ KIỆN ===
+            this.cbNgonNgu.SelectedIndexChanged += new System.EventHandler(this.CbNgonNgu_SelectedIndexChanged);
+            // (Bạn cũng nên làm tương tự cho cbHangPLC)
+            this.cbHangPLC.SelectedIndexChanged += new System.EventHandler(this.CbHangPLC_SelectedIndexChanged);
+            // =======================================
+
+            this.Text = "AI PLC Code-generated Assistant";
             InitializePlcData();
             LoadPromptTemplates();
 
@@ -54,12 +61,8 @@ namespace GeminiC__App
 
             // 2. Nạp dữ liệu cho Ngôn ngữ
             cbNgonNgu.Items.Clear();
-            cbNgonNgu.Items.AddRange(new string[] { "SCL (Structured Text)", "Ladder (LAD)", "FBD (Function Block Diagram)" });
+            cbNgonNgu.Items.AddRange(new string[] { "SCL (Structured Text)", "STL (Statement List)", "Ladder (LAD)", "FBD (Function Block Diagram)" });
             cbNgonNgu.SelectedIndex = 0;
-
-            // Gọi sự kiện 1 lần để nạp cbLoaiPLC và cbLoaiKhoi ban đầu
-            CbHangPLC_SelectedIndexChanged(null, null);
-            CbNgonNgu_SelectedIndexChanged(null, null); // <-- THÊM MỚI
 
             // (Phần code chào mừng và lưu vị trí control giữ nguyên)
             lblPerformance.Text = "";
@@ -154,7 +157,7 @@ namespace GeminiC__App
             if (cbNgonNgu.SelectedItem == null) return;
             string selectedLang = cbNgonNgu.SelectedItem.ToString();
 
-            if (selectedLang.StartsWith("Ladder") || selectedLang.StartsWith("FBD"))
+            if (selectedLang.Equals("Ladder (LAD)") || selectedLang.Equals("FBD (Function Block Diagram)"))
             {
                 // Nếu là Ladder hoặc FBD, TẮT ô chọn Loại khối
                 cbLoaiKhoi.Items.Clear();
@@ -198,7 +201,9 @@ namespace GeminiC__App
         private string BuildPlcPrompt(string hangPLC, string loaiPLC, string loaiKhoi, string ngonNgu, string yeuCauLogic)
         {
             // 1. Xác định key
+            string khoiNgonNgu;
             string khoiKey;
+
             if (loaiKhoi.StartsWith("FUNCTION (FC)"))
                 khoiKey = "FC";
             else if (loaiKhoi.StartsWith("FUNCTION_BLOCK (FB)"))
@@ -209,19 +214,33 @@ namespace GeminiC__App
                 if (ngonNgu.StartsWith("Ladder"))
                     khoiKey = "LAD"; // Sẽ tìm "Siemens_LAD"
                 else if (ngonNgu.StartsWith("FBD"))
+                {
                     khoiKey = "FBD"; // Sẽ tìm "Siemens_FBD"
+                    khoiNgonNgu = ""; // LAD/FBD không có suffix ngôn ngữ
+                }
                 else
+                {
                     khoiKey = "FB"; // Fallback: Nếu lỡ chọn SCL + None, cứ dùng FB
-            }
+                    khoiNgonNgu = "_SCL"; // Fallback: Nếu lỡ chọn SCL + None, cứ dùng FB
 
-            string key = $"{hangPLC}_{khoiKey}";
+                }
+            } 
+
+            if (ngonNgu.StartsWith("SCL (Structured Text)"))
+                khoiNgonNgu = "_SCL";
+            else if (ngonNgu.StartsWith("STL (Statement List)"))
+                khoiNgonNgu = "_STL";
+            else // FBD, LAD
+                khoiNgonNgu = "";
+
+            string key = $"{hangPLC}_{khoiKey}{khoiNgonNgu}";
 
             // 2. Tra cứu template
             string template;
             if (!promptTemplates.TryGetValue(key, out template))
             {
                 // Xử lý lỗi (Fallback)
-                string fallbackKey = $"Siemens_{khoiKey}"; // Thử fallback về Siemens
+                string fallbackKey = $"Siemens_{khoiKey}{khoiNgonNgu}"; // Thử fallback về Siemens
                 if (khoiKey == "LAD" || khoiKey == "FBD") fallbackKey = "Siemens_LAD"; // Fallback chung cho LAD/FBD
 
                 MessageBox.Show($"Không tìm thấy template cho key: '{key}'.\nSử dụng template mặc định '{fallbackKey}'.");

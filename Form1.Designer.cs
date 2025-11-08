@@ -99,7 +99,7 @@
             cbHangPLC.FormattingEnabled = true;
             cbHangPLC.Location = new Point(173, 390);
             cbHangPLC.Name = "cbHangPLC";
-            cbHangPLC.Size = new Size(184, 28);
+            cbHangPLC.Size = new Size(312, 28);
             cbHangPLC.TabIndex = 6;
             // 
             // cbLoaiPLC
@@ -107,7 +107,7 @@
             cbLoaiPLC.FormattingEnabled = true;
             cbLoaiPLC.Location = new Point(173, 424);
             cbLoaiPLC.Name = "cbLoaiPLC";
-            cbLoaiPLC.Size = new Size(184, 28);
+            cbLoaiPLC.Size = new Size(312, 28);
             cbLoaiPLC.TabIndex = 6;
             // 
             // cbNgonNgu
@@ -115,7 +115,7 @@
             cbNgonNgu.FormattingEnabled = true;
             cbNgonNgu.Location = new Point(173, 458);
             cbNgonNgu.Name = "cbNgonNgu";
-            cbNgonNgu.Size = new Size(184, 28);
+            cbNgonNgu.Size = new Size(312, 28);
             cbNgonNgu.TabIndex = 6;
             // 
             // cbLoaiKhoi
@@ -123,7 +123,7 @@
             cbLoaiKhoi.FormattingEnabled = true;
             cbLoaiKhoi.Location = new Point(173, 492);
             cbLoaiKhoi.Name = "cbLoaiKhoi";
-            cbLoaiKhoi.Size = new Size(184, 28);
+            cbLoaiKhoi.Size = new Size(312, 28);
             cbLoaiKhoi.TabIndex = 6;
             // 
             // lblHangPLC
