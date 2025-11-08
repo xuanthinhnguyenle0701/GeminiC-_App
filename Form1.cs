@@ -27,14 +27,6 @@ namespace GeminiC__App
         private Rectangle originalLblPerformance;
         private float originalGenerateFont;
         private float originalLabelFont;
-        private ComboBox cbHangPLC;
-        private ComboBox cbLoaiPLC;
-        private ComboBox cbNgonNgu;
-        private Label lblHangPLC;
-        private Label lblLoaiPLC;
-        private Label lblNgonNgu;
-        private ComboBox cbLoaiKhoi;
-        private Label lblLoaiKhoi;
         private Rectangle originalCbHangPLC;
         private Rectangle originalCbLoaiPLC;
         private Rectangle originalCbNgonNgu;
@@ -55,81 +47,15 @@ namespace GeminiC__App
             InitializePlcData();
             LoadPromptTemplates();
 
-            #region Khởi tạo Giao diện Động (Dynamic UI)
-            int controlWidth = 220;
-            int controlHeight = 25;
-            int labelWidth = 80;
-            int startX = 12;
-            int startY = 12;
-            int padding = 6;
-            rtbOutput.Location = new Point(startX, startY);
-            rtbOutput.Size = new Size(this.ClientSize.Width - (startX * 2), 200);
-            int topOffset = rtbOutput.Bottom + 10;
-
-            // Hãng PLC
-            lblHangPLC = new Label();
-            lblHangPLC.Text = "Hãng PLC:";
-            lblHangPLC.Location = new Point(startX, topOffset + 4);
-            lblHangPLC.Size = new Size(labelWidth, controlHeight);
-            this.Controls.Add(lblHangPLC);
-            cbHangPLC = new ComboBox();
-            cbHangPLC.Location = new Point(startX + labelWidth, topOffset);
-            cbHangPLC.Size = new Size(controlWidth, controlHeight);
+            // 1. Nạp dữ liệu cho Hãng PLC
+            cbHangPLC.Items.Clear();
             cbHangPLC.Items.AddRange(plcModelData.Keys.ToArray());
-            cbHangPLC.DropDownStyle = ComboBoxStyle.DropDownList;
             cbHangPLC.SelectedIndex = 0;
-            cbHangPLC.SelectedIndexChanged += CbHangPLC_SelectedIndexChanged; // Gán sự kiện
-            this.Controls.Add(cbHangPLC);
 
-            // Loại PLC
-            lblLoaiPLC = new Label();
-            lblLoaiPLC.Text = "Loại PLC:";
-            lblLoaiPLC.Location = new Point(startX, topOffset + controlHeight + padding + 4);
-            lblLoaiPLC.Size = new Size(labelWidth, controlHeight);
-            this.Controls.Add(lblLoaiPLC);
-            cbLoaiPLC = new ComboBox();
-            cbLoaiPLC.Location = new Point(startX + labelWidth, topOffset + controlHeight + padding);
-            cbLoaiPLC.Size = new Size(controlWidth, controlHeight);
-            cbLoaiPLC.DropDownStyle = ComboBoxStyle.DropDownList;
-            this.Controls.Add(cbLoaiPLC);
-
-            // Ngôn ngữ
-            lblNgonNgu = new Label();
-            lblNgonNgu.Text = "Ngôn ngữ:";
-            lblNgonNgu.Location = new Point(startX, topOffset + (controlHeight + padding) * 2 + 4);
-            lblNgonNgu.Size = new Size(labelWidth, controlHeight);
-            this.Controls.Add(lblNgonNgu);
-            cbNgonNgu = new ComboBox();
-            cbNgonNgu.Location = new Point(startX + labelWidth, topOffset + (controlHeight + padding) * 2);
-            cbNgonNgu.Size = new Size(controlWidth, controlHeight);
-            cbNgonNgu.Items.AddRange(new string[] { "SCL (Structured Text)", "Ladder (LAD)", "FBD (Function Block Diagram)" }); // Sửa thứ tự
-            cbNgonNgu.DropDownStyle = ComboBoxStyle.DropDownList;
+            // 2. Nạp dữ liệu cho Ngôn ngữ
+            cbNgonNgu.Items.Clear();
+            cbNgonNgu.Items.AddRange(new string[] { "SCL (Structured Text)", "Ladder (LAD)", "FBD (Function Block Diagram)" });
             cbNgonNgu.SelectedIndex = 0;
-            // *** THÊM MỚI: Gán sự kiện cho Ngôn ngữ ***
-            cbNgonNgu.SelectedIndexChanged += CbNgonNgu_SelectedIndexChanged;
-            this.Controls.Add(cbNgonNgu);
-
-            // Loại khối
-            lblLoaiKhoi = new Label();
-            lblLoaiKhoi.Text = "Loại khối:";
-            lblLoaiKhoi.Location = new Point(startX, topOffset + (controlHeight + padding) * 3 + 4);
-            lblLoaiKhoi.Size = new Size(labelWidth, controlHeight);
-            this.Controls.Add(lblLoaiKhoi);
-            cbLoaiKhoi = new ComboBox();
-            cbLoaiKhoi.Location = new Point(startX + labelWidth, topOffset + (controlHeight + padding) * 3);
-            cbLoaiKhoi.Size = new Size(controlWidth, controlHeight);
-            // *** CẬP NHẬT: Thêm "Không (None)" ***
-            cbLoaiKhoi.Items.AddRange(new string[] { "FUNCTION_BLOCK (FB)", "FUNCTION (FC)", "Không (None)" });
-            cbLoaiKhoi.DropDownStyle = ComboBoxStyle.DropDownList;
-            cbLoaiKhoi.SelectedIndex = 0;
-            this.Controls.Add(cbLoaiKhoi);
-
-            // (Code vị trí txtPrompt, btnGenerate, lblPerformance giữ nguyên)
-            txtPrompt.Location = new Point(startX, cbLoaiKhoi.Bottom + 10);
-            txtPrompt.Size = new Size(this.ClientSize.Width - btnGenerate.Width - (startX * 3), txtPrompt.Height);
-            btnGenerate.Location = new Point(this.ClientSize.Width - btnGenerate.Width - startX, txtPrompt.Top);
-            lblPerformance.Location = new Point(startX, txtPrompt.Bottom + 5);
-            #endregion
 
             // Gọi sự kiện 1 lần để nạp cbLoaiPLC và cbLoaiKhoi ban đầu
             CbHangPLC_SelectedIndexChanged(null, null);
@@ -481,6 +407,7 @@ namespace GeminiC__App
         {
         }
         #endregion
+
     }
 
     // --- (Class JSON giữ nguyên) ---
