@@ -36,7 +36,8 @@
         "--- KẾT THÚC MẪU ---",
         "\n--- YÊU CẦU CỦA NGƯỜI DÙNG ---",
         "\"%LOGIC_HERE%\"",
-        "\n(Hãy bắt đầu điền vào mẫu ngay lập tức. Luôn comment bằng Tiếng Anh.)"
+        "\n(Hãy bắt đầu điền vào mẫu ngay lập tức. Luôn comment bằng Tiếng Anh.)",
+        "\n(LUÔN LUÔN trả logic điều khiển hoàn chỉnh trong khối ''scl )"
       ]
     },
     {
@@ -72,7 +73,8 @@
         "--- KẾT THÚC MẪU ---",
         "\n--- YÊU CẦU CỦA NGƯỜI DÙNG ---",
         "\"%LOGIC_HERE%\"",
-        "\n(Hãy bắt đầu điền vào mẫu ngay lập tức. Luôn comment bằng Tiếng Anh.)"
+        "\n(Hãy bắt đầu điền vào mẫu ngay lập tức. Luôn comment bằng Tiếng Anh.)",
+        "\n(LUÔN LUÔN trả logic điều khiển hoàn chỉnh trong khối ''scl )"
       ]
     },
     {
@@ -131,7 +133,8 @@
         "   * VAR (Tĩnh): tiền tố \"stat_\"",
         "   * VAR_TEMP (Tạm): tiền tố \"temp_\"",
         "7. **HẰNG SỐ (CONSTANT):** KHÔNG SỬ DỤNG `VAR_CONSTANT`. Trình biên dịch không hỗ trợ. Thay vào đó, hãy dùng `VAR` (biến tĩnh) với giá trị khởi tạo (ví dụ: `stat_MyConstant : Int := 100;`).",
-        "\n(Hãy bắt đầu điền vào mẫu ngay lập tức. Luôn comment bằng Tiếng Anh.)"
+        "\n(Hãy bắt đầu điền vào mẫu ngay lập tức. Luôn comment bằng Tiếng Anh.)",
+        "\n(LUÔN LUÔN trả logic điều khiển hoàn chỉnh trong khối ''stl )"
       ]
     },
     {
@@ -179,7 +182,8 @@
         "   * VAR_OUTPUT: tiền tố \"q_\"",
         "   * VAR_TEMP (Tạm): tiền tố \"temp_\"",
         "6. **HẰNG SỐ (CONSTANT):** KHÔNG SỬ DỤNG `VAR_CONSTANT`. Trình biên dịch không hỗ trợ.",
-        "\n(Hãy bắt đầu điền vào mẫu ngay lập tức. Luôn comment bằng Tiếng Anh.)"
+        "\n(Hãy bắt đầu điền vào mẫu ngay lập tức. Luôn comment bằng Tiếng Anh.)",
+        "\n(LUÔN LUÔN trả logic điều khiển hoàn chỉnh trong khối ''stl )"
       ]
     },
     {
