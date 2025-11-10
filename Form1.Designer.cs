@@ -182,7 +182,7 @@
             panelPLC.Controls.Add(lblLoaiPLC);
             panelPLC.Controls.Add(cbLoaiKhoi);
             panelPLC.Controls.Add(lblHangPLC);
-            panelPLC.Location = new Point(68, 294);
+            panelPLC.Location = new Point(68, 299);
             panelPLC.Name = "panelPLC";
             panelPLC.Size = new Size(449, 103);
             panelPLC.TabIndex = 8;
