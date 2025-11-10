@@ -68,11 +68,11 @@
             txtPrompt.Cursor = Cursors.IBeam;
             txtPrompt.Font = new Font("Microsoft Sans Serif", 10.2F, FontStyle.Bold, GraphicsUnit.Point, 0);
             txtPrompt.ForeColor = SystemColors.ControlText;
-            txtPrompt.Location = new Point(24, 402);
+            txtPrompt.Location = new Point(24, 388);
             txtPrompt.Margin = new Padding(3, 2, 3, 2);
             txtPrompt.Multiline = true;
             txtPrompt.Name = "txtPrompt";
-            txtPrompt.Size = new Size(666, 130);
+            txtPrompt.Size = new Size(666, 117);
             txtPrompt.TabIndex = 4;
             txtPrompt.TextChanged += txtPrompt_TextChanged;
             // 
@@ -85,20 +85,22 @@
             rtbOutput.Margin = new Padding(3, 2, 3, 2);
             rtbOutput.Name = "rtbOutput";
             rtbOutput.ReadOnly = true;
-            rtbOutput.Size = new Size(830, 240);
+            rtbOutput.Size = new Size(830, 226);
             rtbOutput.TabIndex = 0;
             rtbOutput.Text = "";
             // 
             // lblPerformance
             // 
+            lblPerformance.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             lblPerformance.AutoSize = true;
             lblPerformance.Font = new Font("Microsoft Sans Serif", 10.2F, FontStyle.Bold | FontStyle.Italic, GraphicsUnit.Point, 0);
             lblPerformance.ForeColor = SystemColors.Desktop;
-            lblPerformance.Location = new Point(24, 543);
+            lblPerformance.Location = new Point(24, 536);
             lblPerformance.Name = "lblPerformance";
             lblPerformance.Size = new Size(52, 17);
             lblPerformance.TabIndex = 5;
             lblPerformance.Text = "label1";
+            lblPerformance.Click += lblPerformance_Click;
             // 
             // cbHangPLC
             // 
@@ -182,7 +184,7 @@
             panelPLC.Controls.Add(lblLoaiPLC);
             panelPLC.Controls.Add(cbLoaiKhoi);
             panelPLC.Controls.Add(lblHangPLC);
-            panelPLC.Location = new Point(68, 299);
+            panelPLC.Location = new Point(68, 285);
             panelPLC.Name = "panelPLC";
             panelPLC.Size = new Size(449, 103);
             panelPLC.TabIndex = 8;
@@ -190,7 +192,7 @@
             // cbChuyenMuc
             // 
             cbChuyenMuc.FormattingEnabled = true;
-            cbChuyenMuc.Location = new Point(196, 268);
+            cbChuyenMuc.Location = new Point(196, 254);
             cbChuyenMuc.Name = "cbChuyenMuc";
             cbChuyenMuc.Size = new Size(274, 23);
             cbChuyenMuc.TabIndex = 9;

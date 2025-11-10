@@ -446,6 +446,11 @@ namespace GeminiC__App
         {
         }
         #endregion
+
+        private void lblPerformance_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 
     // --- (Class JSON giữ nguyên) ---
