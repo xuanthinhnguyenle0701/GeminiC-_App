@@ -445,6 +445,9 @@ namespace GeminiC__App
         private void Form1_Load(object sender, EventArgs e)
         {
         }
+        private void lblPerformance_Click(object sender, EventArgs e)
+        {
+        }
         #endregion
     }
 
