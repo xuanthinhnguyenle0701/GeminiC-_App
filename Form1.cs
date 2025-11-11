@@ -9,11 +9,15 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Collections.Generic;
 using System.Linq;
+using System.Diagnostics;
+using ClosedXML.Excel;
+using System.Data;
 
 namespace GeminiC__App
 {
     // LƯU Ý: Code này YÊU CẦU bạn đã kéo thả các control 
     // (cbChuyenMuc, panelPLC, cbHangPLC, v.v...) VÀO TRÌNH DESIGNER
+    [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
     public partial class Form1 : Form
     {
         // --- API & PATH ---
@@ -27,9 +31,14 @@ namespace GeminiC__App
         private Dictionary<string, string> promptTemplates = new Dictionary<string, string>();
         private Dictionary<string, List<string>> plcModelData = new Dictionary<string, List<string>>();
 
+
         public Form1()
         {
             InitializeComponent(); // BẮT BUỘC có dòng này đầu tiên
+
+            this.cbChuyenMuc.SelectedIndexChanged += new System.EventHandler(this.CbChuyenMuc_SelectedIndexChanged);
+            this.cbHangPLC.SelectedIndexChanged += new System.EventHandler(this.CbHangPLC_SelectedIndexChanged);
+            this.cbNgonNgu.SelectedIndexChanged += new System.EventHandler(this.CbNgonNgu_SelectedIndexChanged);
 
             // --- Thiết lập giao diện và nạp dữ liệu ---
             this.Text = "AI PLC & SCADA Code Generator";
@@ -51,16 +60,6 @@ namespace GeminiC__App
             cbNgonNgu.Items.AddRange(new string[] { "SCL (Structured Text)", "STL (Statement List)", "Ladder (LAD)", "FBD (Function Block Diagram)" });
             cbNgonNgu.SelectedIndex = 0;
 
-            // 4. Gán sự kiện (Nếu bạn chưa gán trong Designer)
-            // (Đảm bảo các dòng này tồn tại)
-            this.cbChuyenMuc.SelectedIndexChanged += new System.EventHandler(this.CbChuyenMuc_SelectedIndexChanged);
-            this.cbHangPLC.SelectedIndexChanged += new System.EventHandler(this.CbHangPLC_SelectedIndexChanged);
-            this.cbNgonNgu.SelectedIndexChanged += new System.EventHandler(this.CbNgonNgu_SelectedIndexChanged);
-
-            // 5. Kích hoạt sự kiện lần đầu để UI đúng trạng thái
-            CbChuyenMuc_SelectedIndexChanged(null, null);
-            CbHangPLC_SelectedIndexChanged(null, null);
-            CbNgonNgu_SelectedIndexChanged(null, null);
 
             // 6. Chỉnh lại lời chào
             lblPerformance.Text = "";
@@ -311,6 +310,83 @@ namespace GeminiC__App
             btnGenerate.Enabled = true;
         }
 
+        #region Hàm lấy và hiển thị file excel
+        private void btnOpenFile_Click(object sender, EventArgs e)
+        {
+            ofdUserDialog.Filter = "Excel Files|*.xlsx;*.xlsm";
+            ofdUserDialog.Title = "Chọn một file Excel";
+
+            DialogResult result = ofdUserDialog.ShowDialog();
+
+            if (result == DialogResult.OK)
+            {
+                string filePath = ofdUserDialog.FileName;
+                try
+                {
+                    // 1. Gọi hàm mới để chuyển Excel thành Bảng Dữ liệu
+                    DataTable dt = GetDataTableFromExcel(filePath);
+
+                    // 2. Gán Bảng Dữ liệu làm nguồn cho DataGridView
+                    // Đây là dòng code "thần kỳ"
+                    dataGridView1.DataSource = dt;
+
+                    // 3. (Tùy chọn) Tự động điều chỉnh độ rộng cột
+                    dataGridView1.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
+
+                    // Xóa nội dung rtbOutput cũ đi
+                    txtFilePath.Text = $"{filePath}";
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Lỗi khi đọc file Excel:\n{ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private DataTable GetDataTableFromExcel(string filePath)
+        {
+            var dt = new DataTable();
+
+            using (var workbook = new XLWorkbook(filePath))
+            {
+                var worksheet = workbook.Worksheet(1); // Lấy sheet đầu tiên
+
+                // Kiểm tra xem sheet có trống không
+                if (worksheet.RowsUsed().Count() == 0)
+                {
+                    return dt; // Trả về bảng rỗng
+                }
+
+                // 1. Tạo các cột (Columns) cho DataTable từ hàng đầu tiên của Excel
+                var firstRow = worksheet.FirstRowUsed();
+                foreach (var cell in firstRow.CellsUsed())
+                {
+                    // Thêm cột với tên là giá trị của ô
+                    dt.Columns.Add(cell.Value.ToString());
+                }
+
+                // 2. Thêm các hàng (Rows) vào DataTable (bỏ qua hàng đầu tiên)
+                foreach (var row in worksheet.RowsUsed().Skip(1)) // Skip(1) = Bỏ qua hàng tiêu đề
+                {
+                    // Tạo một hàng mới cho DataTable
+                    var dataRow = dt.NewRow();
+
+                    // Lặp qua số lượng cột đã tạo
+                    for (int i = 0; i < dt.Columns.Count; i++)
+                    {
+                        // Lấy ô tương ứng (ClosedXML dùng index 1-based)
+                        var cell = row.Cell(i + 1);
+                        dataRow[i] = cell.Value;
+                    }
+
+                    // Thêm hàng dữ liệu vào Bảng
+                    dt.Rows.Add(dataRow);
+                }
+            }
+
+            return dt;
+        }
+        #endregion
 
         // --- (Các hàm còn lại: GenerateScriptFromGemini, ExtractCodeFromMarkdown) ---
         #region API Calls & File Handling
@@ -419,11 +495,11 @@ namespace GeminiC__App
                 else if (selectedLang.StartsWith("SCL"))
                     fileExtension = ".scl";
                 else if (selectedLang.StartsWith("STL"))
-                    fileExtension = ".stl";
+                    fileExtension = ".awl";
                 else if (selectedLang.StartsWith("Ladder"))
-                    fileExtension = ".lad.txt"; // (Mô tả text)
+                    fileExtension = "_lad.txt"; // (Mô tả text)
                 else if (selectedLang.StartsWith("FBD"))
-                    fileExtension = ".fbd.txt"; // (Mô tả text)
+                    fileExtension = "_fbd.txt"; // (Mô tả text)
 
                 scriptPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"GeneratedCode{fileExtension}");
 
@@ -448,12 +524,14 @@ namespace GeminiC__App
         private void lblPerformance_Click(object sender, EventArgs e)
         {
         }
+
+        private string GetDebuggerDisplay()
+        {
+            return ToString();
+        }
         #endregion
 
-        private void lblPerformance_Click(object sender, EventArgs e)
-        {
-
-        }
+        
     }
 
     // --- (Class JSON giữ nguyên) ---
