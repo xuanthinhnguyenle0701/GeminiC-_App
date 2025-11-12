@@ -9,15 +9,11 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Collections.Generic;
 using System.Linq;
-using System.Diagnostics;
 using ClosedXML.Excel;
 using System.Data;
 
 namespace GeminiC__App
 {
-    // LƯU Ý: Code này YÊU CẦU bạn đã kéo thả các control 
-    // (cbChuyenMuc, panelPLC, cbHangPLC, v.v...) VÀO TRÌNH DESIGNER
-    [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
     public partial class Form1 : Form
     {
         // --- API & PATH ---
@@ -313,7 +309,7 @@ namespace GeminiC__App
         #region Hàm lấy và hiển thị file excel
         private void btnOpenFile_Click(object sender, EventArgs e)
         {
-            ofdUserDialog.Filter = "Excel Files|*.xlsx;*.xlsm";
+            ofdUserDialog.Filter = "Excel Files (.xlsx, .xlsm) |*.xlsx;*.xlsm | All files | *.* ";
             ofdUserDialog.Title = "Chọn một file Excel";
 
             DialogResult result = ofdUserDialog.ShowDialog();
@@ -523,11 +519,6 @@ namespace GeminiC__App
         }
         private void lblPerformance_Click(object sender, EventArgs e)
         {
-        }
-
-        private string GetDebuggerDisplay()
-        {
-            return ToString();
         }
         #endregion
 
