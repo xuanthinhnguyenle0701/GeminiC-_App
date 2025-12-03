@@ -143,36 +143,36 @@
             lblHangPLC.AutoSize = true;
             lblHangPLC.Location = new Point(2, 11);
             lblHangPLC.Name = "lblHangPLC";
-            lblHangPLC.Size = new Size(72, 20);
+            lblHangPLC.Size = new Size(75, 20);
             lblHangPLC.TabIndex = 7;
-            lblHangPLC.Text = "Hãng PLC";
+            lblHangPLC.Text = "PLC Brand";
             // 
             // lblLoaiPLC
             // 
             lblLoaiPLC.AutoSize = true;
             lblLoaiPLC.Location = new Point(2, 45);
             lblLoaiPLC.Name = "lblLoaiPLC";
-            lblLoaiPLC.Size = new Size(64, 20);
+            lblLoaiPLC.Size = new Size(67, 20);
             lblLoaiPLC.TabIndex = 7;
-            lblLoaiPLC.Text = "Loại PLC";
+            lblLoaiPLC.Text = "PLC Type";
             // 
             // lblNgonNgu
             // 
             lblNgonNgu.AutoSize = true;
             lblNgonNgu.Location = new Point(2, 75);
             lblNgonNgu.Name = "lblNgonNgu";
-            lblNgonNgu.Size = new Size(138, 20);
+            lblNgonNgu.Size = new Size(135, 20);
             lblNgonNgu.TabIndex = 7;
-            lblNgonNgu.Text = "Ngôn ngữ Lập trình";
+            lblNgonNgu.Text = "Program Language";
             // 
             // lblLoaiKhoi
             // 
             lblLoaiKhoi.AutoSize = true;
             lblLoaiKhoi.Location = new Point(6, 108);
             lblLoaiKhoi.Name = "lblLoaiKhoi";
-            lblLoaiKhoi.Size = new Size(69, 20);
+            lblLoaiKhoi.Size = new Size(78, 20);
             lblLoaiKhoi.TabIndex = 7;
-            lblLoaiKhoi.Text = "Loại khối";
+            lblLoaiKhoi.Text = "Block type";
             // 
             // panelPLC
             // 

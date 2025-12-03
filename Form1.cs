@@ -43,7 +43,7 @@ namespace GeminiC__App
 
             // 1. Nạp dữ liệu Chuyên mục
             cbChuyenMuc.Items.Clear();
-            cbChuyenMuc.Items.AddRange(new string[] { "Lập trình PLC", "Lập trình SCADA" });
+            cbChuyenMuc.Items.AddRange(new string[] { "PLC Programming", "SCADA Designing" });
             cbChuyenMuc.SelectedIndex = 0;
 
             // 2. Nạp dữ liệu cho Hãng PLC (trong panelPLC)
@@ -59,11 +59,11 @@ namespace GeminiC__App
 
             // 6. Chỉnh lại lời chào
             lblPerformance.Text = "";
-            rtbOutput.Text = $" Chào mừng đến với đồ án AI-PLC!\n (Đã tải thành công {promptTemplates.Count} templates từ file JSON)\n" +
+            rtbOutput.Text = $" Welcome to PLC/SCADA Virtual Assistant!\n (Successfully loaded {promptTemplates.Count} templates from file JSON)\n" +
                              "------------------------------------------------------------------------------------------------\n" +
-                             "1. Chọn Chuyên mục (PLC/SCADA).\n" +
-                             "2. Cấu hình các lựa chọn bên dưới.\n" +
-                             "3. Nhập yêu cầu logic và nhấn 'Generate'.\n";
+                             "1. Choose your components (PLC/SCADA).\n" +
+                             "2. Config your chosen component.\n" +
+                             "3. Describe your logic and press 'Generate'.\n";
 
             // 7. XÓA CODE RESIZE: 
             // Xóa các biến original... và hàm Form1_Resize, ResizeControl.
@@ -87,7 +87,7 @@ namespace GeminiC__App
             if (cbChuyenMuc.SelectedItem == null) return;
             string selectedChuyenMuc = cbChuyenMuc.SelectedItem.ToString();
 
-            if (selectedChuyenMuc == "Lập trình PLC")
+            if (selectedChuyenMuc == "PLC Programming")
             {
                 panelPLC.Visible = true;
                 // (Sau này thêm panelSCADA.Visible = false;)
@@ -131,7 +131,7 @@ namespace GeminiC__App
             {
                 cbLoaiKhoi.Enabled = false;
                 cbLoaiKhoi.Items.Clear();
-                cbLoaiKhoi.Items.Add("Không (None)");
+                cbLoaiKhoi.Items.Add("None");
                 cbLoaiKhoi.SelectedIndex = 0;
             }
             else // SCL, STL
@@ -161,7 +161,7 @@ namespace GeminiC__App
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi nghiêm trọng: Không thể đọc file 'PromptTemplates.json'.\nChi tiết: {ex.Message}", "Lỗi Tải Template", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Critical error: cannot read file 'PromptTemplates.json'.\nDetail: {ex.Message}", "Error loading Template", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -170,7 +170,7 @@ namespace GeminiC__App
         {
             string key = "";
 
-            if (chuyenMuc == "Lập trình PLC")
+            if (chuyenMuc == "PLC Programming")
             {
                 string blockKey = "";
                 string langKey = "";
@@ -198,7 +198,7 @@ namespace GeminiC__App
             else // "Lập trình SCADA"
             {
                 // (Sau này sẽ đọc từ cbScadaPlatform...)
-                key = "WinCC_Unified_JavaScript"; // Hardcoded
+                key = "WinCC_Unified_Layout"; // Hardcoded
             }
 
             // 3. Tra cứu template
@@ -215,11 +215,11 @@ namespace GeminiC__App
                     else if (key.Contains("_FB_")) fallbackKey = "Siemens_FB_SCL";
                 }
 
-                MessageBox.Show($"Không tìm thấy template cho key: '{key}'.\nSử dụng template mặc định '{fallbackKey}'.");
+                MessageBox.Show($"No template for key can be found: '{key}'.\nUsing default template '{fallbackKey}'.");
                 if (!promptTemplates.TryGetValue(fallbackKey, out template))
                 {
-                    MessageBox.Show($"Lỗi nghiêm trọng: Không tìm thấy template mặc định '{fallbackKey}'.");
-                    return "LỖI: KHÔNG TÌM THẤY TEMPLATE";
+                    MessageBox.Show($"Critical error:no default template can be found '{fallbackKey}'.");
+                    return "ERROR: NO TEMPLATE CAN BE FOUND";
                 }
             }
 
@@ -240,14 +240,14 @@ namespace GeminiC__App
             lblPerformance.ForeColor = Color.Black;
             if (string.IsNullOrWhiteSpace(txtPrompt.Text))
             {
-                MessageBox.Show("Vui lòng nhập yêu cầu logic điều khiển.");
+                MessageBox.Show("Please input your control logic.");
                 return;
             }
 
             // --- SỬA LỖI NULL BẮT ĐẦU TỪ ĐÂY ---
             if (cbChuyenMuc.SelectedItem == null)
             {
-                MessageBox.Show("Lỗi: Vui lòng chọn một 'Chuyên mục'.");
+                MessageBox.Show("Error: Please choose a component.");
                 return;
             }
 
@@ -258,12 +258,12 @@ namespace GeminiC__App
             string loaiKhoi = "";
             string yeuCauLogic = txtPrompt.Text;
 
-            if (chuyenMuc == "Lập trình PLC")
+            if (chuyenMuc == "PLC Programming")
             {
                 // Kiểm tra null cho các control trong panel PLC
                 if (cbHangPLC.SelectedItem == null || cbLoaiPLC.SelectedItem == null || cbNgonNgu.SelectedItem == null || cbLoaiKhoi.SelectedItem == null)
                 {
-                    MessageBox.Show("Lỗi: Vui lòng chọn đầy đủ Hãng, Loại PLC, Ngôn ngữ và Loại khối.");
+                    MessageBox.Show("Error: Please make sure Brand, PLC Type, Program language and Block type are chosen.");
                     return;
                 }
 
@@ -276,13 +276,13 @@ namespace GeminiC__App
             // --- KẾT THÚC SỬA LỖI NULL ---
 
             btnGenerate.Enabled = false;
-            lblPerformance.Text = "Đang tạo code.....";
+            lblPerformance.Text = "Generating code.....";
 
             string promptReady = BuildPlcPrompt(chuyenMuc, hangPLC, loaiPLC, loaiKhoi, ngonNgu, yeuCauLogic);
 
-            if (promptReady.StartsWith("LỖI:"))
+            if (promptReady.StartsWith("ERROR:"))
             {
-                MessageBox.Show(promptReady, "Lỗi Template", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(promptReady, "Error in Template", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 btnGenerate.Enabled = true;
                 return;
             }
@@ -299,7 +299,7 @@ namespace GeminiC__App
             }
             else
             {
-                lblPerformance.Text = "Lỗi: Không nhận được nội dung từ AI.";
+                lblPerformance.Text = "Error: No content recieved from AI.";
                 lblPerformance.ForeColor = Color.Red;
             }
 
@@ -310,7 +310,7 @@ namespace GeminiC__App
         private void btnOpenFile_Click(object sender, EventArgs e)
         {
             ofdUserDialog.Filter = "Excel Files (.xlsx, .xlsm) |*.xlsx;*.xlsm | All files | *.* ";
-            ofdUserDialog.Title = "Chọn một file Excel";
+            ofdUserDialog.Title = "Please choose a file Excel";
 
             DialogResult result = ofdUserDialog.ShowDialog();
 
@@ -334,7 +334,7 @@ namespace GeminiC__App
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Lỗi khi đọc file Excel:\n{ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show($"Error reading file Excel:\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
@@ -434,11 +434,11 @@ namespace GeminiC__App
                         // Thêm kiểm tra lỗi (ví dụ: API Key hết hạn, Billing)
                         if (jsonResponse.error != null)
                         {
-                            MessageBox.Show($"API Error: {jsonResponse.error.message}", "Lỗi API", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show($"API Error: {jsonResponse.error.message}", "Error API", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                         else if (jsonResponse.promptFeedback != null)
                         {
-                            MessageBox.Show($"Prompt bị chặn: {jsonResponse.promptFeedback.blockReason}", "Lỗi Prompt", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            MessageBox.Show($"Prompt is blocked: {jsonResponse.promptFeedback.blockReason}", "Error Prompt", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         }
                         return null;
                     }
@@ -450,7 +450,7 @@ namespace GeminiC__App
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Đã xảy ra lỗi không mong muốn: {ex.Message}");
+                MessageBox.Show($"Unexpected error occured: {ex.Message}");
                 return null;
             }
         }
@@ -472,7 +472,7 @@ namespace GeminiC__App
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi khi trích xuất code: {ex.Message}");
+                MessageBox.Show($"Error formatting code: {ex.Message}");
                 return rawResponse;
             }
         }
@@ -486,7 +486,7 @@ namespace GeminiC__App
                 string selectedLang = (cbNgonNgu.SelectedItem != null) ? cbNgonNgu.SelectedItem.ToString() : "";
                 string selectedChuyenMuc = (cbChuyenMuc.SelectedItem != null) ? cbChuyenMuc.SelectedItem.ToString() : "";
 
-                if (selectedChuyenMuc == "Lập trình SCADA")
+                if (selectedChuyenMuc == "SCADA Designing")
                     fileExtension = ".js";
                 else if (selectedLang.StartsWith("SCL"))
                     fileExtension = ".scl";
@@ -500,11 +500,11 @@ namespace GeminiC__App
                 scriptPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"GeneratedCode{fileExtension}");
 
                 File.WriteAllText(scriptPath, scriptContent);
-                rtbOutput.Text = "Đã lưu code vào file: " + scriptPath + "\n\n" + scriptContent;
+                rtbOutput.Text = "Saved code into file: " + scriptPath + "\n\n" + scriptContent;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi khi lưu file: {ex.Message}");
+                MessageBox.Show($"Error saving file: {ex.Message}");
             }
         }
         #endregion
