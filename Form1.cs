@@ -18,7 +18,7 @@ namespace GeminiC__App
     {
         // --- API & PATH ---
         // THAY KEY CỦA BẠN VÀO ĐÂY (VÀ ĐẢM BẢO KEY ĐÃ BẬT BILLING NẾU DÙNG PRO)
-        private const string ApiKey = "AIzaSyBNQonrLz5eqNjwJsDqz8WCsQRrHxtjxZ0";
+        private const string ApiKey = "AIzaSyBsti1gSdBZT0YYEL8VGSHsEkB-N_RDVH0";
         private const string GeminiApiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + ApiKey;
 
         private string scriptPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GeneratedCode.scl");
@@ -487,7 +487,7 @@ namespace GeminiC__App
                 string selectedChuyenMuc = (cbChuyenMuc.SelectedItem != null) ? cbChuyenMuc.SelectedItem.ToString() : "";
 
                 if (selectedChuyenMuc == "SCADA Designing")
-                    fileExtension = ".js";
+                    fileExtension = ".json";
                 else if (selectedLang.StartsWith("SCL"))
                     fileExtension = ".scl";
                 else if (selectedLang.StartsWith("STL"))
